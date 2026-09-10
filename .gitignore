@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.log
+.pytest_cache/
+.mypy_cache/
+instance/
+webapp/migrations/
+functionapp/.python_packages/
+functionapp/local.settings.json
+.vscode/
