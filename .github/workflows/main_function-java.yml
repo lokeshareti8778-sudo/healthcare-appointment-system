@@ -43,7 +43,7 @@ jobs:
           client-id: 88798b75-ba90-45c5-87e6-5f56a8680496
           tenant-id: 0c939da3-2338-4621-854b-f42d73bcdf00
           subscription-id: 6dc52c09-2f17-4b9e-9f7e-4f2eef0575b2
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          client-secret: Uqv8Q~jf4k0aj4XUdRTNkP5HzllSatBoLh0JHbPS
 
       - name: Deploy Azure Function
         uses: Azure/functions-action@v1
