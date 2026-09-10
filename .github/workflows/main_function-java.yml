@@ -18,7 +18,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -28,25 +28,36 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Verify project
+      - name: Verify Maven Project
         shell: pwsh
         run: |
           if (!(Test-Path "java-functionapp/pom.xml")) {
-            Write-Host "java-functionapp contents:"
-            Get-ChildItem java-functionapp
-            throw "pom.xml not found!"
+            Write-Host "ERROR: pom.xml not found."
+            exit 1
           }
 
-      - name: Build Function
+      - name: Build Azure Function
         working-directory: java-functionapp
         shell: pwsh
         run: |
           mvn clean package
 
-      - name: Show build output
+      - name: Show Build Output
         shell: pwsh
         run: |
+          Write-Host "Contents of target folder:"
           Get-ChildItem -Recurse java-functionapp\target
+
+      - name: Verify Deployment Package
+        shell: pwsh
+        run: |
+          if (Test-Path "java-functionapp/target/azure-functions/${{ env.FUNCTION_APP_NAME }}") {
+            Write-Host "Deployment package found."
+          } else {
+            Write-Host "Deployment package NOT found."
+            Get-ChildItem -Recurse java-functionapp\target
+            exit 1
+          }
 
       - name: Deploy to Azure Function
         uses: Azure/functions-action@v1
