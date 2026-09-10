@@ -18,7 +18,6 @@ jobs:
     runs-on: windows-latest
 
     permissions:
-      id-token: write
       contents: read
 
     steps:
@@ -32,43 +31,22 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Verify Maven Project
-        shell: pwsh
-        run: |
-          if (!(Test-Path "java-functionapp/pom.xml")) {
-            Write-Host "ERROR: pom.xml not found."
-            exit 1
-          }
-
-      - name: Build Azure Function
+      - name: Build Function
         working-directory: java-functionapp
         shell: pwsh
         run: |
           mvn clean package
 
-      - name: Show Build Output
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse java-functionapp\target
-
-      - name: Verify Deployment Package
-        shell: pwsh
-        run: |
-          if (!(Test-Path "java-functionapp/target/azure-functions/${{ env.FUNCTION_APP_NAME }}")) {
-            Write-Error "Deployment package not found."
-            exit 1
-          }
-
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_27E00F9B640A48279728BD346C0E383F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_077B786C1EF94BB0A8C0ADAEEC37782E }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_04511FAD843F468CADDCEB2A2020FDE5 }}
+          client-id: 88798b75-ba90-45c5-87e6-5f56a8680496
+          tenant-id: 0c939da3-2338-4621-854b-f42d73bcdf00
+          subscription-id: 6dc52c09-2f17-4b9e-9f7e-4f2eef0575b2
+          client-secret: Uqv8Q~jf4k0aj4XUdRTNkP5HzllSatBoLh0JHbPS
 
       - name: Deploy to Azure Function
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ env.FUNCTION_APP_NAME }}
           package: java-functionapp/target/azure-functions/${{ env.FUNCTION_APP_NAME }}
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
