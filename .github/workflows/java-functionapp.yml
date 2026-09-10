@@ -43,7 +43,7 @@ jobs:
 
       - name: Build Azure Function
         run: |
-          mvn --batch-mode --update-snapshots -f java-functionapp/pom.xml clean package
+          mvn --batch-mode --update-snapshots -f java-functionapp/pom.xml clean package -DfunctionAppName="$FUNCTION_APP_NAME"
 
       - name: Deploy Azure Function
         uses: Azure/functions-action@v1
