@@ -17,6 +17,10 @@ jobs:
   build-and-deploy:
     runs-on: windows-latest
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -45,19 +49,22 @@ jobs:
       - name: Show Build Output
         shell: pwsh
         run: |
-          Write-Host "Contents of target folder:"
           Get-ChildItem -Recurse java-functionapp\target
 
       - name: Verify Deployment Package
         shell: pwsh
         run: |
-          if (Test-Path "java-functionapp/target/azure-functions/${{ env.FUNCTION_APP_NAME }}") {
-            Write-Host "Deployment package found."
-          } else {
-            Write-Host "Deployment package NOT found."
-            Get-ChildItem -Recurse java-functionapp\target
+          if (!(Test-Path "java-functionapp/target/azure-functions/${{ env.FUNCTION_APP_NAME }}")) {
+            Write-Error "Deployment package not found."
             exit 1
           }
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_27E00F9B640A48279728BD346C0E383F }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_077B786C1EF94BB0A8C0ADAEEC37782E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_04511FAD843F468CADDCEB2A2020FDE5 }}
 
       - name: Deploy to Azure Function
         uses: Azure/functions-action@v1
