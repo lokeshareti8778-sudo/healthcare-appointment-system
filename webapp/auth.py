@@ -1,6 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 from sqlalchemy import or_
+from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
 from forms import LoginForm, RegistrationForm
@@ -20,10 +21,15 @@ def register():
         else:
             patient = Patient(full_name=form.full_name.data, email=form.email.data.lower(), phone=form.phone.data, date_of_birth=form.date_of_birth.data)
             patient.set_password(form.password.data)
-            db.session.add(patient)
-            db.session.commit()
-            flash("Your account is ready. Please sign in.", "success")
-            return redirect(url_for("auth.login"))
+            try:
+                db.session.add(patient)
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                flash("We could not create your account right now. Please try again.", "danger")
+            else:
+                flash("Your account is ready. Please sign in.", "success")
+                return redirect(url_for("auth.login"))
     return render_template("register.html", form=form)
 
 
