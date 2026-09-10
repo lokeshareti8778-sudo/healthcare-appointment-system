@@ -1,8 +1,6 @@
 import os
-import logging
 
 from flask import Flask, jsonify
-from sqlalchemy.exc import SQLAlchemyError
 
 from config import Config
 from extensions import db, login_manager, migrate
@@ -20,12 +18,6 @@ def create_app(config_class=Config):
     from auth import auth_bp
     from doctor import doctor_bp
     from routes import main_bp
-
-    with app.app_context():
-        try:
-            db.create_all()
-        except SQLAlchemyError:
-            logging.getLogger(__name__).exception("Database initialization failed")
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
