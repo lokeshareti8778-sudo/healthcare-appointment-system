@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 from sqlalchemy import or_
@@ -16,20 +18,20 @@ def register():
         return redirect(url_for("main.dashboard"))
     form = RegistrationForm()
     if form.validate_on_submit():
-        if Patient.query.filter_by(email=form.email.data.lower()).first():
-            flash("An account with this email already exists.", "warning")
-        else:
-            patient = Patient(full_name=form.full_name.data, email=form.email.data.lower(), phone=form.phone.data, date_of_birth=form.date_of_birth.data)
-            patient.set_password(form.password.data)
-            try:
+        try:
+            if Patient.query.filter_by(email=form.email.data.lower()).first():
+                flash("An account with this email already exists.", "warning")
+            else:
+                patient = Patient(full_name=form.full_name.data, email=form.email.data.lower(), phone=form.phone.data, date_of_birth=form.date_of_birth.data)
+                patient.set_password(form.password.data)
                 db.session.add(patient)
                 db.session.commit()
-            except SQLAlchemyError:
-                db.session.rollback()
-                flash("We could not create your account right now. Please try again.", "danger")
-            else:
                 flash("Your account is ready. Please sign in.", "success")
                 return redirect(url_for("auth.login"))
+        except SQLAlchemyError:
+            db.session.rollback()
+            logging.getLogger(__name__).exception("Patient registration failed")
+            flash("We could not create your account right now. Please try again.", "danger")
     return render_template("register.html", form=form)
 
 
