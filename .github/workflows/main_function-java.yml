@@ -28,25 +28,25 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '17'
           cache: maven
 
-      - name: Build Function
+      - name: Build Azure Function
         working-directory: java-functionapp
         shell: pwsh
-        run: |
-          mvn clean package
+        run: mvn clean package
 
       - name: Azure Login
         uses: azure/login@v2
         with:
+          auth-type: SERVICE_PRINCIPAL
           client-id: 88798b75-ba90-45c5-87e6-5f56a8680496
           tenant-id: 0c939da3-2338-4621-854b-f42d73bcdf00
           subscription-id: 6dc52c09-2f17-4b9e-9f7e-4f2eef0575b2
-          client-secret: Uqv8Q~jf4k0aj4XUdRTNkP5HzllSatBoLh0JHbPS
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
-      - name: Deploy to Azure Function
+      - name: Deploy Azure Function
         uses: Azure/functions-action@v1
         with:
-          app-name: ${{ env.FUNCTION_APP_NAME }}
-          package: java-functionapp/target/azure-functions/${{ env.FUNCTION_APP_NAME }}
+          app-name: function-java
+          package: java-functionapp/target/azure-functions/function-java
