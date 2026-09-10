@@ -2,10 +2,12 @@ name: Deploy Java Azure Function
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - 'java-functionapp/**'
       - '.github/workflows/java-functionapp.yml'
+
   workflow_dispatch:
 
 permissions:
@@ -13,13 +15,14 @@ permissions:
 
 env:
   JAVA_VERSION: '17'
-  FUNCTION_APP_NAME: ${{ secrets.AZURE_JAVA_FUNCTIONAPP_NAME || secrets.AZURE_FUNCTIONAPP_NAME }}
+  FUNCTION_APP_NAME: function-java
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Java
@@ -31,24 +34,21 @@ jobs:
 
       - name: Validate deployment settings
         env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE || secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          PUBLISH_PROFILE: ${{ secrets.AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE }}
         run: |
-          if [ -z "$FUNCTION_APP_NAME" ]; then
-            echo "Missing Azure Function App name. Configure AZURE_JAVA_FUNCTIONAPP_NAME or AZURE_FUNCTIONAPP_NAME in GitHub repository secrets."
-            exit 1
-          fi
           if [ -z "$PUBLISH_PROFILE" ]; then
-            echo "Missing Azure publish profile. Configure AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE or AZURE_FUNCTIONAPP_PUBLISH_PROFILE in GitHub repository secrets."
+            echo "ERROR: Missing GitHub Secret AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE"
             exit 1
           fi
 
-      - name: Build Azure Function package
+      - name: Build Azure Function
         working-directory: java-functionapp
-        run: mvn --batch-mode --update-snapshots clean package -DfunctionAppName="$FUNCTION_APP_NAME"
+        run: |
+          mvn clean package
 
-      - name: Deploy to Azure Function App
+      - name: Deploy Azure Function
         uses: Azure/functions-action@v1
         with:
-          app-name: ${{ env.FUNCTION_APP_NAME }}
-          package: java-functionapp/target/azure-functions/${{ env.FUNCTION_APP_NAME }}
-          publish-profile: ${{ secrets.AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE || secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          app-name: function-java
+          package: java-functionapp/target/azure-functions/function-java
+          publish-profile: ${{ secrets.AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE }}
