@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 env:
   JAVA_VERSION: '17'
@@ -32,14 +33,12 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Validate deployment settings
-        env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE }}
-        run: |
-          if [ -z "$PUBLISH_PROFILE" ]; then
-            echo "ERROR: Missing GitHub Secret AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE"
-            exit 1
-          fi
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F521763185294E34870C8C87EFE764F4 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_88283F2DA83B4EF089E591EA59BA58BD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6E8BFA63F641409F93E516E148E49684 }}
 
       - name: Build Azure Function
         run: |
@@ -50,4 +49,3 @@ jobs:
         with:
           app-name: function-java
           package: java-functionapp/target/azure-functions/function-java
-          publish-profile: ${{ secrets.AZURE_JAVA_FUNCTIONAPP_PUBLISH_PROFILE }}
