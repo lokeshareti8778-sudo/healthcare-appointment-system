@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.carepoint</groupId>
@@ -12,17 +13,20 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
-        <azure.functions.version>3.1.0</azure.functions.version>
+
         <azure.functions.maven.plugin.version>1.36.0</azure.functions.maven.plugin.version>
-        <functionAppName>appointment-notification-function</functionAppName>
+        <azure.functions.java.library.version>3.1.0</azure.functions.java.library.version>
+
+        <functionAppName>function-java</functionAppName>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.azure.functions</groupId>
             <artifactId>azure-functions-java-library</artifactId>
-            <version>${azure.functions.version}</version>
+            <version>${azure.functions.java.library.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -32,28 +36,67 @@
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>${java.version}</release>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-functions-maven-plugin</artifactId>
                 <version>${azure.functions.maven.plugin.version}</version>
+
                 <configuration>
+
                     <appName>${functionAppName}</appName>
-                    <resourceGroup>carepoint-functions-rg</resourceGroup>
-                    <region>eastus</region>
+
+                    <!-- CHANGE THIS if your Resource Group name is different -->
+                    <resourceGroup>healthcare-rg</resourceGroup>
+
+                    <region>southindia</region>
+
                     <runtime>
-                        <os>linux</os>
+                        <os>windows</os>
                         <javaVersion>17</javaVersion>
                     </runtime>
+
+                    <appSettings>
+                        <property>
+                            <name>FUNCTIONS_EXTENSION_VERSION</name>
+                            <value>~4</value>
+                        </property>
+
+                        <property>
+                            <name>FUNCTIONS_WORKER_RUNTIME</name>
+                            <value>java</value>
+                        </property>
+
+                        <property>
+                            <name>WEBSITE_RUN_FROM_PACKAGE</name>
+                            <value>1</value>
+                        </property>
+                    </appSettings>
+
                 </configuration>
+
+                <executions>
+                    <execution>
+                        <id>package-functions</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
             </plugin>
+
         </plugins>
     </build>
+
 </project>
